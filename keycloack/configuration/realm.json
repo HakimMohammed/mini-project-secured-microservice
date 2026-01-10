@@ -7,17 +7,45 @@
       { "name": "CLIENT" }
     ]
   },
+  "users": [
+    {
+      "username": "admin1",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "admin2",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["ADMIN"]
+    },
+    {
+      "username": "client1",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["CLIENT"]
+    },
+    {
+      "username": "client2",
+      "enabled": true,
+      "credentials": [{ "type": "password", "value": "password", "temporary": false }],
+      "realmRoles": ["CLIENT"]
+    }
+  ],
   "clients": [
     {
       "clientId": "react-frontend",
       "publicClient": true,
       "directAccessGrantsEnabled": true,
-      "webOrigins": ["*"]
+      "webOrigins": ["*"],
+      "redirectUris": ["http://localhost:3000/*"]
     },
     {
       "clientId": "spring-gateway",
       "secret": "your-client-secret-here",
-      "bearerOnly": false
+      "bearerOnly": false,
+      "serviceAccountsEnabled": true
     }
   ]
 }
