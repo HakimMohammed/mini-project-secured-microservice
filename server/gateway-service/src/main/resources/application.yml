@@ -1,0 +1,18 @@
+# ===================================================================
+# Gateway Routes Configuration
+# ===================================================================
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: product-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/products/**
+
+            - id: order-service
+              uri: http://localhost:8082
+              predicates:
+                - Path=/api/orders/**

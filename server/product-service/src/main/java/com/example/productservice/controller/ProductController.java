@@ -1,8 +1,10 @@
 package com.example.productservice.controller;
 
+import com.example.productservice.dto.ProductRequestDTO;
 import com.example.productservice.entities.Product;
 import com.example.productservice.services.ProductService;
-import lombok.AllArgsConstructor;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,15 +14,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/products")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ProductController {
 
     private final ProductService productService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> create(@RequestBody Product product) {
-        return new ResponseEntity<>(productService.create(product), HttpStatus.CREATED);
+    public ResponseEntity<Product> create(@Valid @RequestBody ProductRequestDTO request) {
+        return new ResponseEntity<>(productService.create(request), HttpStatus.CREATED);
     }
 
     @GetMapping
@@ -37,14 +39,14 @@ public class ProductController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Product> update(@PathVariable String id, @RequestBody Product product) {
-        return ResponseEntity.ok(productService.update(id, product));
+    public ResponseEntity<Product> update(@PathVariable String id, @Valid @RequestBody ProductRequestDTO request) {
+        return ResponseEntity.ok(productService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         productService.delete(id);
-        return ResponseEntity.noContent().build(); // 204 No Content is standard for delete
+        return ResponseEntity.noContent().build();
     }
 }
