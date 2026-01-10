@@ -1,0 +1,23 @@
+{
+  "realm": "eshop-realm",
+  "enabled": true,
+  "roles": {
+    "realm": [
+      { "name": "ADMIN" },
+      { "name": "CLIENT" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "react-frontend",
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "webOrigins": ["*"]
+    },
+    {
+      "clientId": "spring-gateway",
+      "secret": "your-client-secret-here",
+      "bearerOnly": false
+    }
+  ]
+}
