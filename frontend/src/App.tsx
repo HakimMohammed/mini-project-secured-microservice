@@ -30,8 +30,8 @@ const App: React.FC = () => {
         <ReactKeycloakProvider
             authClient={keycloak}
             initOptions={{
-                onLoad: 'login-required',
-                checkLoginIframe: false,
+                onLoad: 'check-sso',
+                silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
                 pkceMethod: 'S256',
             }}
             onEvent={handleKeycloakEvent}

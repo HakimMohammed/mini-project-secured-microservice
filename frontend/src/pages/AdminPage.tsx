@@ -1,6 +1,6 @@
 import React from 'react';
 import { OrderList } from '../features/orders/OrderList';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { LayoutDashboard, Package, ShoppingBag, Users } from 'lucide-react';
 
 export const AdminPage: React.FC = () => {

@@ -7,12 +7,42 @@ spring:
       server:
         webmvc:
           routes:
+            # Product Service API
             - id: product-service
               uri: http://localhost:8081
               predicates:
                 - Path=/api/products/**
 
+            # Order Service API
             - id: order-service
               uri: http://localhost:8082
               predicates:
                 - Path=/api/orders/**
+
+            # Product Service Swagger
+            - id: product-service-docs
+              uri: http://localhost:8081
+              predicates:
+                - Path=/product-service/v3/api-docs/**
+              filters:
+                - RewritePath=/product-service/(?<path>.*), /${path}
+
+            # Order Service Swagger
+            - id: order-service-docs
+              uri: http://localhost:8082
+              predicates:
+                - Path=/order-service/v3/api-docs/**
+              filters:
+                - RewritePath=/order-service/(?<path>.*), /${path}
+
+# ===================================================================
+# Swagger Aggregation
+# ===================================================================
+springdoc:
+  swagger-ui:
+    urls:
+      - name: Product Service
+        url: /product-service/v3/api-docs
+      - name: Order Service
+        url: /order-service/v3/api-docs
+    path: /swagger-ui.html

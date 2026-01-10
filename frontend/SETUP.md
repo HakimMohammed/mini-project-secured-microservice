@@ -20,7 +20,7 @@ npm install
 3. Select `eshop-realm` realm
 4. Go to **Clients** → **Create Client**
 5. Configure:
-   - **Client ID**: `eshop-frontend`
+   - **Client ID**: `react-frontend`
    - **Client Type**: Public
    - **Valid Redirect URIs**: `http://localhost:3000/*`
    - **Web Origins**: `http://localhost:3000`

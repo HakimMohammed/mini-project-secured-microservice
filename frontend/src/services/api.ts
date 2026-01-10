@@ -3,7 +3,7 @@ import keycloak from '../config/keycloak';
 import { ApiError } from '../types';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8080',
+    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8080',
     headers: {
         'Content-Type': 'application/json',
     },
