@@ -1,0 +1,11 @@
+.git
+.gitignore
+*.md
+.env
+.env.local
+.idea
+.vscode
+node_modules
+*/node_modules
+*/target
+*/.git
