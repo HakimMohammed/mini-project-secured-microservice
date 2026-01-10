@@ -1,4 +1,4 @@
-package com.example.orderservice.communication;
+package com.example.orderservice.client;
 
 import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;

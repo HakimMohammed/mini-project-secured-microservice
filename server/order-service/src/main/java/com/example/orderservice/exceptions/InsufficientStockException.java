@@ -1,7 +1,7 @@
 package com.example.orderservice.exceptions;
 
-public class InsufficientStockExcpetion extends RuntimeException {
-    public InsufficientStockExcpetion(String message) {
+public class InsufficientStockException extends RuntimeException {
+    public InsufficientStockException(String message) {
         super(message);
     }
 }
