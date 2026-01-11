@@ -65,7 +65,7 @@ coverage/
 # =========================
 # Environment Files
 # =========================
-.env
+#.env
 .env.local
 .env.development.local
 .env.test.local
@@ -75,8 +75,8 @@ coverage/
 # =========================
 # Security Scan Reports
 # =========================
-devsecops/security-reports/**/*
-!devsecops/security-reports/.gitkeep
+#devsecops/security-reports/**/*
+#!devsecops/security-reports/.gitkeep
 
 # =========================
 # Docker

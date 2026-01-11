@@ -1,0 +1,250 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/main/sarif-2.1/schema/sarif-schema-2.1.0.json",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "fullName": "Trivy Vulnerability Scanner",
+          "informationUri": "https://github.com/aquasecurity/trivy",
+          "name": "Trivy",
+          "rules": [
+            {
+              "id": "CVE-2021-3803",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "nodejs-nth-check: inefficient regular expression complexity"
+              },
+              "fullDescription": {
+                "text": "nth-check is vulnerable to Inefficient Regular Expression Complexity"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2021-3803",
+              "help": {
+                "text": "Vulnerability CVE-2021-3803\nSeverity: HIGH\nPackage: nth-check\nFixed Version: 2.0.1\nLink: [CVE-2021-3803](https://avd.aquasec.com/nvd/cve-2021-3803)\nnth-check is vulnerable to Inefficient Regular Expression Complexity",
+                "markdown": "**Vulnerability CVE-2021-3803**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|HIGH|nth-check|2.0.1|[CVE-2021-3803](https://avd.aquasec.com/nvd/cve-2021-3803)|\n\nnth-check is vulnerable to Inefficient Regular Expression Complexity"
+              },
+              "properties": {
+                "cvssv3_baseScore": 7.5,
+                "cvssv3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+                "precision": "very-high",
+                "security-severity": "7.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "HIGH"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2023-44270",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "PostCSS: Improper input validation in PostCSS"
+              },
+              "fullDescription": {
+                "text": "An issue was discovered in PostCSS before 8.4.31. The vulnerability affects linters using PostCSS to parse external untrusted CSS. An attacker can prepare CSS in such a way that it will contains parts parsed by PostCSS as a CSS comment. After processing by PostCSS, it will be included in the PostCSS output in CSS nodes (rules, properties) despite being included in a comment."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2023-44270",
+              "help": {
+                "text": "Vulnerability CVE-2023-44270\nSeverity: MEDIUM\nPackage: postcss\nFixed Version: 8.4.31\nLink: [CVE-2023-44270](https://avd.aquasec.com/nvd/cve-2023-44270)\nAn issue was discovered in PostCSS before 8.4.31. The vulnerability affects linters using PostCSS to parse external untrusted CSS. An attacker can prepare CSS in such a way that it will contains parts parsed by PostCSS as a CSS comment. After processing by PostCSS, it will be included in the PostCSS output in CSS nodes (rules, properties) despite being included in a comment.",
+                "markdown": "**Vulnerability CVE-2023-44270**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|postcss|8.4.31|[CVE-2023-44270](https://avd.aquasec.com/nvd/cve-2023-44270)|\n\nAn issue was discovered in PostCSS before 8.4.31. The vulnerability affects linters using PostCSS to parse external untrusted CSS. An attacker can prepare CSS in such a way that it will contains parts parsed by PostCSS as a CSS comment. After processing by PostCSS, it will be included in the PostCSS output in CSS nodes (rules, properties) despite being included in a comment."
+              },
+              "properties": {
+                "cvssv3_baseScore": 5.3,
+                "cvssv3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:L/A:N",
+                "precision": "very-high",
+                "security-severity": "5.3",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2025-30359",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "webpack-dev-server: webpack-dev-server information exposure"
+              },
+              "fullDescription": {
+                "text": "webpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when they access a malicious web site. Because the request for classic script by a script tag is not subject to same origin policy, an attacker can inject a malicious script in their site and run the script. Note that the attacker has to know the port and the output entrypoint script path. Combined with prototype pollution, the attacker can get a reference to the webpack runtime variables. By using `Function::toString` against the values in `__webpack_modules__`, the attacker can get the source code. Version 5.2.1 contains a patch for the issue."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2025-30359",
+              "help": {
+                "text": "Vulnerability CVE-2025-30359\nSeverity: MEDIUM\nPackage: webpack-dev-server\nFixed Version: 5.2.1\nLink: [CVE-2025-30359](https://avd.aquasec.com/nvd/cve-2025-30359)\nwebpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when they access a malicious web site. Because the request for classic script by a script tag is not subject to same origin policy, an attacker can inject a malicious script in their site and run the script. Note that the attacker has to know the port and the output entrypoint script path. Combined with prototype pollution, the attacker can get a reference to the webpack runtime variables. By using `Function::toString` against the values in `__webpack_modules__`, the attacker can get the source code. Version 5.2.1 contains a patch for the issue.",
+                "markdown": "**Vulnerability CVE-2025-30359**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|webpack-dev-server|5.2.1|[CVE-2025-30359](https://avd.aquasec.com/nvd/cve-2025-30359)|\n\nwebpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when they access a malicious web site. Because the request for classic script by a script tag is not subject to same origin policy, an attacker can inject a malicious script in their site and run the script. Note that the attacker has to know the port and the output entrypoint script path. Combined with prototype pollution, the attacker can get a reference to the webpack runtime variables. By using `Function::toString` against the values in `__webpack_modules__`, the attacker can get the source code. Version 5.2.1 contains a patch for the issue."
+              },
+              "properties": {
+                "cvssv3_baseScore": 5.3,
+                "cvssv3_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:H/I:N/A:N",
+                "precision": "very-high",
+                "security-severity": "5.3",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            },
+            {
+              "id": "CVE-2025-30360",
+              "name": "LanguageSpecificPackageVulnerability",
+              "shortDescription": {
+                "text": "webpack-dev-server: webpack-dev-server information exposure"
+              },
+              "fullDescription": {
+                "text": "webpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when you access a malicious web site with non-Chromium based browser. The `Origin` header is checked to prevent Cross-site WebSocket hijacking from happening, which was reported by CVE-2018-14732. But webpack-dev-server always allows IP address `Origin` headers. This allows websites that are served on IP addresses to connect WebSocket. An attacker can obtain source code via a method similar to that used to exploit CVE-2018-14732. Version 5.2.1 contains a patch for the issue."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "helpUri": "https://avd.aquasec.com/nvd/cve-2025-30360",
+              "help": {
+                "text": "Vulnerability CVE-2025-30360\nSeverity: MEDIUM\nPackage: webpack-dev-server\nFixed Version: 5.2.1\nLink: [CVE-2025-30360](https://avd.aquasec.com/nvd/cve-2025-30360)\nwebpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when you access a malicious web site with non-Chromium based browser. The `Origin` header is checked to prevent Cross-site WebSocket hijacking from happening, which was reported by CVE-2018-14732. But webpack-dev-server always allows IP address `Origin` headers. This allows websites that are served on IP addresses to connect WebSocket. An attacker can obtain source code via a method similar to that used to exploit CVE-2018-14732. Version 5.2.1 contains a patch for the issue.",
+                "markdown": "**Vulnerability CVE-2025-30360**\n| Severity | Package | Fixed Version | Link |\n| --- | --- | --- | --- |\n|MEDIUM|webpack-dev-server|5.2.1|[CVE-2025-30360](https://avd.aquasec.com/nvd/cve-2025-30360)|\n\nwebpack-dev-server allows users to use webpack with a development server that provides live reloading. Prior to version 5.2.1, webpack-dev-server users' source code may be stolen when you access a malicious web site with non-Chromium based browser. The `Origin` header is checked to prevent Cross-site WebSocket hijacking from happening, which was reported by CVE-2018-14732. But webpack-dev-server always allows IP address `Origin` headers. This allows websites that are served on IP addresses to connect WebSocket. An attacker can obtain source code via a method similar to that used to exploit CVE-2018-14732. Version 5.2.1 contains a patch for the issue."
+              },
+              "properties": {
+                "cvssv3_baseScore": 6.5,
+                "cvssv3_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:R/S:U/C:H/I:N/A:N",
+                "precision": "very-high",
+                "security-severity": "6.5",
+                "tags": [
+                  "vulnerability",
+                  "security",
+                  "MEDIUM"
+                ]
+              }
+            }
+          ],
+          "version": "0.68.2"
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CVE-2021-3803",
+          "ruleIndex": 0,
+          "level": "error",
+          "message": {
+            "text": "Package: nth-check\nInstalled Version: 1.0.2\nVulnerability CVE-2021-3803\nSeverity: HIGH\nFixed Version: 2.0.1\nLink: [CVE-2021-3803](https://avd.aquasec.com/nvd/cve-2021-3803)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package-lock.json",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 15840,
+                  "startColumn": 1,
+                  "endLine": 15848,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "package-lock.json: nth-check@1.0.2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2023-44270",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Package: postcss\nInstalled Version: 7.0.39\nVulnerability CVE-2023-44270\nSeverity: MEDIUM\nFixed Version: 8.4.31\nLink: [CVE-2023-44270](https://avd.aquasec.com/nvd/cve-2023-44270)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package-lock.json",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 14387,
+                  "startColumn": 1,
+                  "endLine": 14403,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "package-lock.json: postcss@7.0.39"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2025-30359",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Package: webpack-dev-server\nInstalled Version: 4.15.2\nVulnerability CVE-2025-30359\nSeverity: MEDIUM\nFixed Version: 5.2.1\nLink: [CVE-2025-30359](https://avd.aquasec.com/nvd/cve-2025-30359)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package-lock.json",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 16797,
+                  "startColumn": 1,
+                  "endLine": 16856,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "package-lock.json: webpack-dev-server@4.15.2"
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CVE-2025-30360",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Package: webpack-dev-server\nInstalled Version: 4.15.2\nVulnerability CVE-2025-30360\nSeverity: MEDIUM\nFixed Version: 5.2.1\nLink: [CVE-2025-30360](https://avd.aquasec.com/nvd/cve-2025-30360)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "package-lock.json",
+                  "uriBaseId": "ROOTPATH"
+                },
+                "region": {
+                  "startLine": 16797,
+                  "startColumn": 1,
+                  "endLine": 16856,
+                  "endColumn": 1
+                }
+              },
+              "message": {
+                "text": "package-lock.json: webpack-dev-server@4.15.2"
+              }
+            }
+          ]
+        }
+      ],
+      "columnKind": "utf16CodeUnits",
+      "originalUriBaseIds": {
+        "ROOTPATH": {
+          "uri": "file:///src/"
+        }
+      }
+    }
+  ]
+}

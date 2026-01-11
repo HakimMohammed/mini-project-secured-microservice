@@ -269,7 +269,8 @@ services:
       - dependency_check_data:/usr/share/dependency-check/data
     command: >
       --scan /src
-      --format ALL
+      --format HTML
+      --format SARIF
       --project "EShop-Microservices"
       --out /report/dependency-check
       --nvdApiKey ${NVD_API_KEY}
