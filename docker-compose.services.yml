@@ -27,7 +27,7 @@ services:
     ports:
       - "9090:8080"
     volumes:
-      - ./keycloack/configuration/realm.json:/opt/keycloak/data/import/realm.json
+      - ./keycloak/configuration/realm.json:/opt/keycloak/data/import/realm.json
     networks:
       - app-network
     extra_hosts:

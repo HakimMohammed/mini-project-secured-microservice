@@ -1,0 +1,99 @@
+# ===================================================================
+# Root .gitignore - E-Shop Microservices Project
+# ===================================================================
+
+# =========================
+# IDE & Editor Files
+# =========================
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
+.settings/
+*.swp
+*.swo
+*~
+
+# =========================
+# OS Generated Files
+# =========================
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# Java / Maven
+# =========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+
+# Spring Boot
+.apt_generated
+.factorypath
+.springBeans
+.sts4-cache
+
+# =========================
+# Node.js / React
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp
+.pnp.js
+
+# Build outputs
+frontend/build/
+dist/
+coverage/
+
+# =========================
+# Environment Files
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# =========================
+# Security Scan Reports
+# =========================
+devsecops/security-reports/**/*
+!devsecops/security-reports/.gitkeep
+
+# =========================
+# Docker
+# =========================
+# Uncomment if you want to ignore docker volumes
+# docker-volumes/
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Temporary Files
+# =========================
+tmp/
+temp/
+*.tmp
+*.temp
