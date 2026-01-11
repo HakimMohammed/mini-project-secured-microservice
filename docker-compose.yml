@@ -1,20 +1,29 @@
 # ===================================================================
-# Docker Compose - Full Stack Application
+# Docker Compose - Full Stack DevSecOps Application
 # ===================================================================
-# Services: Frontend, Gateway, Product Service, Order Service, Keycloak, Databases
+# Profiles:
+#   - infra: Databases and Keycloak
+#   - app: Microservices and Frontend
+#   - security: Security tools (SonarQube, Trivy, Dependency-Check)
+#
+# Usage:
+#   Start App:      docker-compose --profile infra --profile app up -d
+#   Start Security: docker-compose --profile infra --profile security up -d
+#   Start All:      docker-compose --profile all up -d
 # ===================================================================
 
 services:
   # =================================================================
-  # PostgreSQL Database for Products
+  # INFRASTRUCTURE (Databases & Auth)
   # =================================================================
   postgres-product:
     image: postgres:16-alpine
     container_name: postgres-product
+    profiles: [infra, all]
     environment:
-      POSTGRES_DB: product_db
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${PRODUCT_DB_NAME:-product_db}
+      POSTGRES_USER: ${DB_USERNAME:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
     ports:
       - "5433:5432"
     volumes:
@@ -22,21 +31,19 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d product_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-myuser} -d ${PRODUCT_DB_NAME:-product_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # =================================================================
-  # PostgreSQL Database for Orders
-  # =================================================================
   postgres-order:
     image: postgres:16-alpine
     container_name: postgres-order
+    profiles: [infra, all]
     environment:
-      POSTGRES_DB: order_db
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${ORDER_DB_NAME:-order_db}
+      POSTGRES_USER: ${DB_USERNAME:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
     ports:
       - "5434:5432"
     volumes:
@@ -44,21 +51,19 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d order_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-myuser} -d ${ORDER_DB_NAME:-order_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # =================================================================
-  # PostgreSQL Database for Keycloak
-  # =================================================================
   postgres-keycloak:
     image: postgres:16-alpine
     container_name: postgres-keycloak
+    profiles: [infra, all]
     environment:
-      POSTGRES_DB: keycloak
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${KEYCLOAK_DB_NAME:-keycloak}
+      POSTGRES_USER: ${DB_USERNAME:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
     ports:
       - "5435:5432"
     volumes:
@@ -66,25 +71,23 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d keycloak"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-myuser} -d ${KEYCLOAK_DB_NAME:-keycloak}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  # =================================================================
-  # Keycloak Identity Provider
-  # =================================================================
   keycloak:
     image: quay.io/keycloak/keycloak:23.0.0
     container_name: keycloak-service
+    profiles: [infra, all]
     command: start-dev --import-realm
     environment:
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/keycloak
-      KC_DB_USERNAME: myuser
-      KC_DB_PASSWORD: mypassword
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB_URL: jdbc:postgresql://postgres-keycloak:5432/${KEYCLOAK_DB_NAME:-keycloak}
+      KC_DB_USERNAME: ${DB_USERNAME:-myuser}
+      KC_DB_PASSWORD: ${DB_PASSWORD:-mypassword}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       KC_HOSTNAME_STRICT: "false"
       KC_PROXY: edge
     ports:
@@ -98,18 +101,20 @@ services:
         condition: service_healthy
 
   # =================================================================
-  # Product Microservice
+  # APPLICATION SERVICES
   # =================================================================
   product-service:
     build:
       context: ./server/product-service
       dockerfile: Dockerfile
     container_name: product-service
+    profiles: [app, all]
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/product_db
-      SPRING_DATASOURCE_USERNAME: myuser
-      SPRING_DATASOURCE_PASSWORD: mypassword
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/eshop-realm
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-product:5432/${PRODUCT_DB_NAME:-product_db}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-myuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-mypassword}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/${KEYCLOAK_REALM:-eshop-realm}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM:-eshop-realm}/protocol/openid-connect/certs
       SERVER_PORT: 8081
     ports:
       - "8081:8081"
@@ -122,19 +127,18 @@ services:
         condition: service_started
     restart: on-failure
 
-  # =================================================================
-  # Order Microservice
-  # =================================================================
   order-service:
     build:
       context: ./server/order-service
       dockerfile: Dockerfile
     container_name: order-service
+    profiles: [app, all]
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/order_db
-      SPRING_DATASOURCE_USERNAME: myuser
-      SPRING_DATASOURCE_PASSWORD: mypassword
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/eshop-realm
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-order:5432/${ORDER_DB_NAME:-order_db}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME:-myuser}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-mypassword}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/${KEYCLOAK_REALM:-eshop-realm}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM:-eshop-realm}/protocol/openid-connect/certs
       APPLICATION_CONFIG_PRODUCT_SERVICE_URL: http://gateway-service:8080/api/products
       SERVER_PORT: 8082
     ports:
@@ -150,22 +154,23 @@ services:
         condition: service_started
     restart: on-failure
 
-  # =================================================================
-  # API Gateway Service
-  # =================================================================
   gateway-service:
     build:
       context: ./server/gateway-service
       dockerfile: Dockerfile
     container_name: gateway-service
+    profiles: [app, all]
     environment:
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/eshop-realm
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://localhost:9090/realms/${KEYCLOAK_REALM:-eshop-realm}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://keycloak:8080/realms/${KEYCLOAK_REALM:-eshop-realm}/protocol/openid-connect/certs
+      # Route Configuration
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_0_ID: product-service
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_0_URI: http://product-service:8081
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_0_PREDICATES_0: Path=/api/products/**
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_1_ID: order-service
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_1_URI: http://order-service:8082
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_1_PREDICATES_0: Path=/api/orders/**
+      # Swagger/OpenAPI Routes
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_2_ID: product-service-docs
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_2_URI: http://product-service:8081
       SPRING_CLOUD_GATEWAY_SERVER_WEBMVC_ROUTES_2_PREDICATES_0: Path=/product-service/v3/api-docs/**
@@ -185,19 +190,17 @@ services:
       - keycloak
     restart: on-failure
 
-  # =================================================================
-  # Frontend React Application
-  # =================================================================
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        REACT_APP_API_URL: http://localhost:8080
-        REACT_APP_KEYCLOAK_URL: http://localhost:9090
-        REACT_APP_KEYCLOAK_REALM: eshop-realm
-        REACT_APP_KEYCLOAK_CLIENT_ID: react-frontend
+        REACT_APP_API_URL: ${API_GATEWAY_URL:-http://localhost:8080}
+        REACT_APP_KEYCLOAK_URL: ${KEYCLOAK_URL:-http://localhost:9090}
+        REACT_APP_KEYCLOAK_REALM: ${KEYCLOAK_REALM:-eshop-realm}
+        REACT_APP_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-react-frontend}
     container_name: frontend
+    profiles: [app, all]
     ports:
       - "3000:80"
     networks:
@@ -205,17 +208,99 @@ services:
     depends_on:
       - gateway-service
 
+  # =================================================================
+  # SECURITY TOOLS (DevSecOps)
+  # =================================================================
+  postgres-sonarqube:
+    image: postgres:16-alpine
+    container_name: postgres-sonarqube
+    profiles: [security, all]
+    environment:
+      POSTGRES_DB: ${SONARQUBE_DB_NAME:-sonarqube}
+      POSTGRES_USER: ${DB_USERNAME:-myuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-mypassword}
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres-sonarqube-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-myuser} -d ${SONARQUBE_DB_NAME:-sonarqube}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  sonarqube:
+    image: sonarqube:10.3-community
+    container_name: sonarqube
+    profiles: [security, all]
+    environment:
+      SONAR_JDBC_URL: jdbc:postgresql://postgres-sonarqube:5432/${SONARQUBE_DB_NAME:-sonarqube}
+      SONAR_JDBC_USERNAME: ${DB_USERNAME:-myuser}
+      SONAR_JDBC_PASSWORD: ${DB_PASSWORD:-mypassword}
+      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true"
+    ports:
+      - "9000:9000"
+    networks:
+      - app-network
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_logs:/opt/sonarqube/logs
+      - sonarqube_extensions:/opt/sonarqube/extensions
+    depends_on:
+      postgres-sonarqube:
+        condition: service_healthy
+    restart: unless-stopped
+
+  dependency-check:
+    image: owasp/dependency-check:latest
+    container_name: dependency-check
+    profiles: [security, all]
+    environment:
+      NVD_API_KEY: ${NVD_API_KEY}
+    volumes:
+      - ./devsecops/security-reports:/report
+      - ./server:/src
+      - dependency_check_data:/usr/share/dependency-check/data
+    command: >
+      --scan /src
+      --format ALL
+      --project "EShop-Microservices"
+      --out /report/dependency-check
+      --nvdApiKey ${NVD_API_KEY}
+      --enableExperimental
+    networks:
+      - app-network
+
+  trivy:
+    image: aquasec/trivy:latest
+    container_name: trivy-scanner
+    profiles: [security, all]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./devsecops/security-reports:/reports
+      - trivy_cache:/root/.cache
+    command: ["--help"]
+    networks:
+      - app-network
+
 # =================================================================
-# Networks
+# NETWORKS & VOLUMES
 # =================================================================
 networks:
   app-network:
     driver: bridge
 
-# =================================================================
-# Volumes for data persistence
-# =================================================================
 volumes:
+  # DB Data
   postgres-product-data:
   postgres-order-data:
   postgres-keycloak-data:
+  postgres-sonarqube-data:
+  # Tool Data
+  sonarqube_data:
+  sonarqube_logs:
+  sonarqube_extensions:
+  dependency_check_data:
+  trivy_cache:

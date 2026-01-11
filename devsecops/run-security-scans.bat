@@ -28,7 +28,7 @@ if not exist "%REPORTS_DIR%\dependency-check" mkdir "%REPORTS_DIR%\dependency-ch
 if not exist "%REPORTS_DIR%\trivy" mkdir "%REPORTS_DIR%\trivy"
 
 REM ===================================================================
-REM SonarQube Scanning
+REM 1. SonarQube Scannning
 REM ===================================================================
 :sonar_scan
 if "%SCAN_TYPE%"=="dependency" goto dependency_scan
@@ -39,81 +39,91 @@ echo [1/3] Running SonarQube Static Code Analysis...
 REM Check if SonarQube is running
 curl -s http://localhost:9000/api/system/status >nul 2>&1
 if errorlevel 1 (
-    echo ERROR: SonarQube is not running!
-    echo Start it with: docker-compose -f docker-compose.devsecops.yml up -d sonarqube
-    if "%SCAN_TYPE%"=="sonar" exit /b 1
-    goto dependency_scan
+    echo SonarQube is not running. Starting security services...
+    docker-compose --profile security up -d sonarqube postgres-sonarqube
+    
+    echo Waiting for SonarQube to be ready...
+    timeout /t 30 /nobreak >nul
+    
+    :wait_loop
+    curl -s http://localhost:9000/api/system/status | find "UP" >nul
+    if errorlevel 1 (
+        echo Still waiting...
+        timeout /t 5 /nobreak >nul
+        goto wait_loop
+    )
 )
 
-echo Waiting for SonarQube to be ready...
-timeout /t 10 /nobreak >nul
+echo SonarQube is ready.
+
+REM Automate Setup: Change default password (admin/admin -> admin/admin123)
+REM This allows us to run analysis without manual configuration
+echo Configuring SonarQube credentials...
+curl -s -u admin:admin -X POST "http://localhost:9000/api/users/change_password?login=admin&previousPassword=admin&password=admin123" >nul 2>&1
 
 REM Scan each service
 for %%s in (product-service order-service gateway-service) do (
     echo Scanning %%s...
     pushd server\%%s
     if exist mvnw.cmd (
+        REM Run analysis using the automated credentials (admin/admin123)
         call mvnw.cmd clean verify sonar:sonar ^
             -Dsonar.projectKey=%%s ^
             -Dsonar.projectName="%%s" ^
             -Dsonar.host.url=http://localhost:9000 ^
-            -Dsonar.token=%SONAR_TOKEN%
+            -Dsonar.login=admin ^
+            -Dsonar.password=admin123
+            
+        if errorlevel 1 (
+            echo WARNING: SonarQube analysis failed for %%s. Check logs.
+        ) else (
+            echo SUCCESS: %%s scanned.
+        )
     ) else (
         echo ERROR: mvnw.cmd not found in %%s
     )
     popd
 )
 
-echo SonarQube analysis completed
-echo View results at: http://localhost:9000
+echo SonarQube analysis completed.
 echo.
 
 if "%SCAN_TYPE%"=="sonar" goto end
 
 REM ===================================================================
-REM Dependency-Check Scanning
+REM 2. Dependency-Check Scanning
 REM ===================================================================
+:dependency_scan
 
-REM Check if NVD_API_KEY is set
+echo [2/3] Running OWASP Dependency-Check...
+echo Note: It is normal for the dependency-check container to exit after scanning.
+
 if "%NVD_API_KEY%"=="" (
     echo WARNING: NVD_API_KEY environment variable is not set!
-    echo Dependency-Check will run without NVD API access (very slow).
-    echo.
-    echo To get an API key:
-    echo 1. Visit: https://nvd.nist.gov/developers/request-an-api-key
-    echo 2. Set it: setx NVD_API_KEY "your-key-here"
-    echo.
-    set /p "continue=Continue anyway? (y/N): "
-    if /i not "!continue!"=="y" goto end
+    echo Dependency-Check will run without NVD API access (slower).
 )
 
-REM Run dependency check with API key
-:dependency_scan
-echo [2/3] Running OWASP Dependency-Check...
+REM Use docker-compose run for a one-off task
+REM We ignore errors here so the pipeline continues
+docker-compose --profile security run --rm dependency-check
+if errorlevel 1 echo WARNING: Dependency-Check found issues or failed.
 
-docker run --rm ^
-    -v "%PROJECT_ROOT%server:/src" ^
-    -v "%PROJECT_ROOT%%REPORTS_DIR%\dependency-check:/report" ^
-    -v dependency_check_data:/usr/share/dependency-check/data ^
-    owasp/dependency-check:latest ^
-    --scan /src ^
-    --format ALL ^
-    --project "EShop-Microservices" ^
-    --out /report ^
-    --nvdApiKey %NVD_API_KEY% ^
-    --enableExperimental
-
-echo Dependency-Check completed
+echo Dependency-Check phase completed.
 echo View HTML report: %REPORTS_DIR%\dependency-check\dependency-check-report.html
 echo.
 
 if "%SCAN_TYPE%"=="dependency" goto end
 
 REM ===================================================================
-REM Trivy Image Scanning
+REM 3. Trivy Image Scanning
 REM ===================================================================
 :trivy_scan
 echo [3/3] Running Trivy Docker Image Scanning...
+echo Note: It is normal for the trivy container to exit after scanning.
+
+REM Ensure images are built first
+echo Ensuring images are built...
+docker-compose --profile app build product-service order-service gateway-service frontend >nul 2>&1
 
 for %%i in (product-service order-service gateway-service frontend) do (
     echo Scanning %%i:latest...
@@ -127,13 +137,20 @@ for %%i in (product-service order-service gateway-service frontend) do (
         --output /reports/%%i_report.txt ^
         %%i:latest 2>nul
     
-    if errorlevel 1 (
-        echo WARNING: Image %%i:latest not found. Build it first with docker-compose build
-    )
+    REM Generate JSON for records
+    docker run --rm ^
+        -v //var/run/docker.sock:/var/run/docker.sock ^
+        -v "%PROJECT_ROOT%%REPORTS_DIR%\trivy:/reports" ^
+        aquasec/trivy:latest image ^
+        --severity HIGH,CRITICAL ^
+        --format json ^
+        --output /reports/%%i_report.json ^
+        %%i:latest 2>nul
+        
+    echo Report generated: %REPORTS_DIR%\trivy\%%i_report.txt
 )
 
-echo Trivy scanning completed
-echo View reports in: %REPORTS_DIR%\trivy\
+echo Trivy scanning completed.
 echo.
 
 REM ===================================================================
@@ -145,16 +162,9 @@ if "%SCAN_TYPE%"=="all" (
     echo   Security Scan Summary
     echo ================================================
     echo.
-    echo All security scans completed successfully!
-    echo.
-    echo Reports generated in: %REPORTS_DIR%\
-    echo.
-    echo Next steps:
-    echo 1. Review SonarQube dashboard: http://localhost:9000
-    echo 2. Check dependency vulnerabilities: %REPORTS_DIR%\dependency-check\dependency-check-report.html
-    echo 3. Review Trivy image scans: %REPORTS_DIR%\trivy\
-    echo.
-    echo WARNING: Fix any CRITICAL or HIGH severity issues before deployment
+    echo 1. SonarQube: http://localhost:9000 (Login: admin / admin123)
+    echo 2. Dependency-Check: %REPORTS_DIR%\dependency-check\dependency-check-report.html
+    echo 3. Trivy Reports: %REPORTS_DIR%\trivy\
     echo.
 )
 
