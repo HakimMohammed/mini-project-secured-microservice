@@ -21,6 +21,13 @@ public class OrderController {
     
     private final OrderService orderService;
 
+    /**
+     * Creates a new order for the authenticated user.
+     * Validates product availability before creating the order.
+     * @param request Order details with product items
+     * @param jwt JWT token containing user identity
+     * @return Created order
+     */
     @PostMapping
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     public ResponseEntity<Order> create(@Valid @RequestBody OrderRequestDTO request,
@@ -29,6 +36,11 @@ public class OrderController {
         return new ResponseEntity<>(orderService.createOrder(request, userId), HttpStatus.CREATED);
     }
 
+    /**
+     * Retrieves all orders for the authenticated user.
+     * @param jwt JWT token containing user identity
+     * @return List of user's orders
+     */
     @GetMapping("/my-orders")
     @PreAuthorize("hasAnyRole('CLIENT', 'ADMIN')")
     public ResponseEntity<List<Order>> getMyOrders(@AuthenticationPrincipal Jwt jwt) {
@@ -36,6 +48,10 @@ public class OrderController {
         return ResponseEntity.ok(orderService.findByUserId(userId));
     }
 
+    /**
+     * Retrieves all orders in the system. Only accessible by ADMIN users.
+     * @return List of all orders
+     */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Order>> getAllOrders() {

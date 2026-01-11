@@ -192,7 +192,7 @@
                     <!-- Optional: Set delay between requests (milliseconds) -->
                     <nvdApiDelay>4000</nvdApiDelay>
                     <!-- Enable retry on API failures -->
-                    <nvdApiMaxRetryCount>3</nvdApiMaxRetryCount>
+<!--                    <nvdApiMaxRetryCount>3</nvdApiMaxRetryCount>-->
                     <!-- Data directory for caching -->
                     <dataDirectory>${user.home}/.m2/dependency-check-data</dataDirectory>
                     <!-- Suppression file -->

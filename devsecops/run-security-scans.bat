@@ -12,6 +12,14 @@ set "SCRIPT_DIR=%~dp0"
 set "PROJECT_ROOT=%SCRIPT_DIR%..\"
 cd /d "%PROJECT_ROOT%"
 
+REM Load .env file if it exists
+if exist ".env" (
+    echo Loading .env file...
+    for /f "usebackq tokens=1* eol=# delims==" %%a in (".env") do (
+        set "%%a=%%b"
+    )
+)
+
 set REPORTS_DIR=devsecops\security-reports
 set SCAN_TYPE=%1
 
@@ -56,23 +64,30 @@ if errorlevel 1 (
 
 echo SonarQube is ready.
 
-REM Automate Setup: Change default password (admin/admin -> admin/admin123)
-REM This allows us to run analysis without manual configuration
-echo Configuring SonarQube credentials...
-curl -s -u admin:admin -X POST "http://localhost:9000/api/users/change_password?login=admin&previousPassword=admin&password=admin123" >nul 2>&1
+REM Check for SONAR_TOKEN
+if not "%SONAR_TOKEN%"=="" (
+    echo Using provided SONAR_TOKEN...
+    set "SONAR_AUTH=-Dsonar.token=%SONAR_TOKEN%"
+) else (
+    echo No SONAR_TOKEN found. Using default admin credentials...
+    REM Automate Setup: Change default password (admin/admin -> admin/admin123)
+    REM This allows us to run analysis without manual configuration if fresh install
+    echo Configuring SonarQube credentials...
+    curl -s -u admin:admin -X POST "http://localhost:9000/api/users/change_password?login=admin&previousPassword=admin&password=admin123" >nul 2>&1
+    set "SONAR_AUTH=-Dsonar.login=admin -Dsonar.password=admin123"
+)
 
 REM Scan each service
 for %%s in (product-service order-service gateway-service) do (
     echo Scanning %%s...
     pushd server\%%s
     if exist mvnw.cmd (
-        REM Run analysis using the automated credentials (admin/admin123)
-        call mvnw.cmd clean verify sonar:sonar ^
+        REM Run analysis
+        call mvnw.cmd clean verify sonar:sonar -DskipTests ^
             -Dsonar.projectKey=%%s ^
             -Dsonar.projectName="%%s" ^
             -Dsonar.host.url=http://localhost:9000 ^
-            -Dsonar.login=admin ^
-            -Dsonar.password=admin123
+            %SONAR_AUTH%
             
         if errorlevel 1 (
             echo WARNING: SonarQube analysis failed for %%s. Check logs.
@@ -100,7 +115,7 @@ echo Note: It is normal for the dependency-check container to exit after scannin
 
 if "%NVD_API_KEY%"=="" (
     echo WARNING: NVD_API_KEY environment variable is not set!
-    echo Dependency-Check will run without NVD API access (slower).
+    echo Dependency-Check will run without NVD API access ^(slower^).
 )
 
 REM Use docker-compose run for a one-off task
@@ -119,35 +134,41 @@ REM 3. Trivy Image Scanning
 REM ===================================================================
 :trivy_scan
 echo [3/3] Running Trivy Docker Image Scanning...
-echo Note: It is normal for the trivy container to exit after scanning.
+echo Note: Trivy needs to download vulnerability DB on first run. Subsequent runs will be faster due to cache.
 
 REM Ensure images are built first
 echo Ensuring images are built...
-docker-compose --profile app build product-service order-service gateway-service frontend >nul 2>&1
+docker-compose --profile all build product-service order-service gateway-service frontend >nul 2>&1
 
 for %%i in (product-service order-service gateway-service frontend) do (
-    echo Scanning %%i:latest...
-    
-    docker run --rm ^
-        -v //var/run/docker.sock:/var/run/docker.sock ^
-        -v "%PROJECT_ROOT%%REPORTS_DIR%\trivy:/reports" ^
-        aquasec/trivy:latest image ^
-        --severity HIGH,CRITICAL ^
-        --format table ^
-        --output /reports/%%i_report.txt ^
-        %%i:latest 2>nul
-    
-    REM Generate JSON for records
-    docker run --rm ^
-        -v //var/run/docker.sock:/var/run/docker.sock ^
-        -v "%PROJECT_ROOT%%REPORTS_DIR%\trivy:/reports" ^
-        aquasec/trivy:latest image ^
-        --severity HIGH,CRITICAL ^
-        --format json ^
-        --output /reports/%%i_report.json ^
-        %%i:latest 2>nul
+    REM Check if image exists
+    docker image inspect %%i:latest >nul 2>&1
+    if errorlevel 1 (
+        echo ERROR: Image %%i:latest not found! Skipping...
+    ) else (
+        REM Run Trivy using docker-compose to leverage volumes (cache and reports)
+        REM Text Report
+        echo   - Generating Text Report...
+        docker-compose --profile security run --rm trivy image ^
+            --severity HIGH,CRITICAL ^
+            --format table ^
+            --output /reports/%%i_report.txt ^
+            --scanners vuln ^
+            %%i:latest
         
-    echo Report generated: %REPORTS_DIR%\trivy\%%i_report.txt
+        REM JSON Report
+        echo   - Generating JSON Report...
+        docker-compose --profile security run --rm trivy image ^
+            --severity HIGH,CRITICAL ^
+            --format json ^
+            --output /reports/%%i_report.json ^
+            --scanners vuln ^
+            %%i:latest
+            
+        echo   - Reports generated: 
+        echo     %REPORTS_DIR%\trivy\%%i_report.txt
+        echo     %REPORTS_DIR%\trivy\%%i_report.json
+    )
 )
 
 echo Trivy scanning completed.

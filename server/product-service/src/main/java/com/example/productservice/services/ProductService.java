@@ -16,6 +16,7 @@ public class ProductService {
     
     private final ProductRepository productRepository;
 
+    @Transactional
     public Product create(ProductRequestDTO request) {
         Product product = Product.builder()
                 .name(request.getName())
@@ -45,6 +46,7 @@ public class ProductService {
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
     }
 
+    @Transactional
     public void delete(String id) {
         if (!productRepository.existsById(id)) {
             throw new ResourceNotFoundException("Product not found with id: " + id);

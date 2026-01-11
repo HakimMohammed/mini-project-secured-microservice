@@ -19,30 +19,55 @@ public class ProductController {
 
     private final ProductService productService;
 
+    /**
+     * Creates a new product. Only accessible by ADMIN users.
+     * @param request Product creation details
+     * @return Created product with generated ID
+     */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> create(@Valid @RequestBody ProductRequestDTO request) {
         return new ResponseEntity<>(productService.create(request), HttpStatus.CREATED);
     }
 
+    /**
+     * Retrieves all products. Accessible by ADMIN and CLIENT users.
+     * @return List of all products
+     */
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     public ResponseEntity<List<Product>> getAll() {
         return ResponseEntity.ok(productService.getAll());
     }
 
+    /**
+     * Retrieves a product by ID. Accessible by ADMIN and CLIENT users.
+     * @param id Product ID
+     * @return Product details
+     */
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENT')")
     public ResponseEntity<Product> getById(@PathVariable String id) {
         return ResponseEntity.ok(productService.getById(id));
     }
 
+    /**
+     * Updates an existing product. Only accessible by ADMIN users.
+     * @param id Product ID to update
+     * @param request Updated product details
+     * @return Updated product
+     */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> update(@PathVariable String id, @Valid @RequestBody ProductRequestDTO request) {
         return ResponseEntity.ok(productService.update(id, request));
     }
 
+    /**
+     * Deletes a product by ID. Only accessible by ADMIN users.
+     * @param id Product ID to delete
+     * @return No content response
+     */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable String id) {

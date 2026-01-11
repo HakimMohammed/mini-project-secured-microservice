@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ReactKeycloakProvider } from '@react-keycloak/web';
 import keycloak from './config/keycloak';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
 import { ProtectedRoute } from './features/auth/ProtectedRoute';
 import { HomePage } from './pages/HomePage';
@@ -10,24 +11,26 @@ import { AdminPage } from './pages/AdminPage';
 
 const App: React.FC = () => {
     const handleKeycloakEvent = (event: string, error?: any) => {
-        console.log('Keycloak event:', event, error);
-        if (event === 'onAuthError') {
-            console.error('Authentication error:', error);
+        if (process.env.NODE_ENV === 'development') {
+            console.log('Keycloak event:', event, error);
         }
-        if (event === 'onInitError') {
-            console.error('Initialization error:', error);
+        if (event === 'onAuthError' || event === 'onInitError') {
+            console.error(`Keycloak ${event}:`, error);
         }
     };
 
     const handleKeycloakTokens = (tokens: any) => {
-        console.log('Keycloak tokens received:', {
-            token: tokens.token ? 'present' : 'missing',
-            refreshToken: tokens.refreshToken ? 'present' : 'missing',
-        });
+        if (process.env.NODE_ENV === 'development') {
+            console.log('Keycloak tokens received:', {
+                token: tokens.token ? 'present' : 'missing',
+                refreshToken: tokens.refreshToken ? 'present' : 'missing',
+            });
+        }
     };
 
     return (
-        <ReactKeycloakProvider
+        <ErrorBoundary>
+            <ReactKeycloakProvider
             authClient={keycloak}
             initOptions={{
                 onLoad: 'check-sso',
@@ -80,6 +83,7 @@ const App: React.FC = () => {
                 </Routes>
             </Router>
         </ReactKeycloakProvider>
+        </ErrorBoundary>
     );
 };
 

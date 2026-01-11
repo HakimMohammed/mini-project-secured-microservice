@@ -26,6 +26,14 @@ import java.util.stream.Collectors;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    /**
+     * Configures the security filter chain for the API Gateway.
+     * - Enables CORS for frontend communication
+     * - Disables CSRF as we use stateless JWT authentication
+     * - Permits public access to Swagger documentation
+     * - Requires authentication for all other endpoints
+     * - Configures JWT validation with Keycloak role mapping
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -69,6 +77,11 @@ public class SecurityConfig {
         return converter;
     }
 
+    /**
+     * Converts Keycloak JWT roles to Spring Security authorities.
+     * Extracts roles from the 'realm_access.roles' claim and prefixes them with 'ROLE_'
+     * to comply with Spring Security conventions for role-based authorization.
+     */
     static class KeycloakRoleConverter implements Converter<Jwt, Collection<GrantedAuthority>> {
         @Override
         public Collection<GrantedAuthority> convert(Jwt jwt) {

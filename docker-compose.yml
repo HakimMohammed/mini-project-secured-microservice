@@ -107,6 +107,7 @@ services:
     build:
       context: ./server/product-service
       dockerfile: Dockerfile
+    image: product-service:latest
     container_name: product-service
     profiles: [app, all]
     environment:
@@ -131,6 +132,7 @@ services:
     build:
       context: ./server/order-service
       dockerfile: Dockerfile
+    image: order-service:latest
     container_name: order-service
     profiles: [app, all]
     environment:
@@ -158,6 +160,7 @@ services:
     build:
       context: ./server/gateway-service
       dockerfile: Dockerfile
+    image: gateway-service:latest
     container_name: gateway-service
     profiles: [app, all]
     environment:
@@ -199,6 +202,7 @@ services:
         REACT_APP_KEYCLOAK_URL: ${KEYCLOAK_URL:-http://localhost:9090}
         REACT_APP_KEYCLOAK_REALM: ${KEYCLOAK_REALM:-eshop-realm}
         REACT_APP_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-react-frontend}
+    image: frontend:latest
     container_name: frontend
     profiles: [app, all]
     ports:
